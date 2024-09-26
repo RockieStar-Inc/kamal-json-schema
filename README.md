@@ -7,8 +7,7 @@ IDE hints for Kamal 2 configuration fileploy your applications instantly!
 In your `deploy.yaml` file, add the following:
 
 ```yaml
-config:
-  schema: "https://github.com/RockieStar-Inc/kamal-json-schema/main/schema.json"
+# yaml-language-server: $schema="https://github.com/RockieStar-Inc/kamal-json-schema/main/schema.json"
 ```
 
 ## Contributing
