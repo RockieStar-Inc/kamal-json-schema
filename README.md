@@ -1,4 +1,5 @@
 # Kamal 2 Configuration: JSON Schema
+
 IDE hints for Kamal 2 configuration fileploy your applications instantly!
 
 
