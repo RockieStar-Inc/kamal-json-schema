@@ -1,0 +1,357 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Kamal 2.0 Config",
+  "description": "Configuration schema for Kamal 2.0 deployment tool.",
+  "type": "object",
+  "properties": {
+    "service": {
+      "type": "string",
+      "description": "Name of your application. Used to uniquely configure containers."
+    },
+    "image": {
+      "type": "string",
+      "description": "Name of the container image."
+    },
+    "servers": {
+      "type": "object",
+      "description": "Servers to deploy to, organized by roles.",
+      "patternProperties": {
+        "^[a-z0-9_-]+$": {
+          "type": "array",
+          "description": "List of servers for a specific role.",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string",
+                "description": "Server hostname or IP address."
+              },
+              {
+                "type": "object",
+                "description": "Server with tags.",
+                "properties": {
+                  "host": {
+                    "type": "string",
+                    "description": "Server hostname or IP address."
+                  },
+                  "tags": {
+                    "type": "array",
+                    "description": "List of tags for the server.",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "host"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "proxy": {
+      "type": "object",
+      "description": "Configuration for kamal-proxy.",
+      "properties": {
+        "ssl": {
+          "type": "boolean",
+          "description": "Enable automatic HTTPS via Let's Encrypt."
+        },
+        "host": {
+          "type": "string",
+          "description": "The host that will be used to serve the app."
+        },
+        "app_port": {
+          "type": "integer",
+          "description": "The port the application container is exposed on.",
+          "default": 80
+        },
+        "response_timeout": {
+          "type": "integer",
+          "description": "How long to wait for requests to complete before timing out.",
+          "default": 30
+        },
+        "healthcheck": {
+          "type": "object",
+          "description": "Healthcheck configuration.",
+          "properties": {
+            "interval": {
+              "type": "integer",
+              "description": "Healthcheck interval in seconds."
+            },
+            "path": {
+              "type": "string",
+              "description": "Healthcheck path."
+            },
+            "timeout": {
+              "type": "integer",
+              "description": "Healthcheck timeout in seconds."
+            }
+          }
+        },
+        "buffering": {
+          "type": "object",
+          "description": "Buffering configuration.",
+          "properties": {
+            "requests": {
+              "type": "boolean",
+              "description": "Enable request buffering."
+            },
+            "responses": {
+              "type": "boolean",
+              "description": "Enable response buffering."
+            },
+            "max_request_body": {
+              "type": "integer",
+              "description": "Maximum request body size in bytes."
+            },
+            "max_response_body": {
+              "type": "integer",
+              "description": "Maximum response body size in bytes."
+            },
+            "memory": {
+              "type": "integer",
+              "description": "Memory limit for buffering in bytes."
+            }
+          }
+        },
+        "logging": {
+          "type": "object",
+          "description": "Request logging configuration.",
+          "properties": {
+            "request_headers": {
+              "type": "array",
+              "description": "Request headers to log.",
+              "items": {
+                "type": "string"
+              }
+            },
+            "response_headers": {
+              "type": "array",
+              "description": "Response headers to log.",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "forward_headers": {
+          "type": "boolean",
+          "description": "Whether to forward X-Forwarded-For and X-Forwarded-Proto headers."
+        }
+      }
+    },
+    "registry": {
+      "type": "object",
+      "description": "Credentials for your image host.",
+      "properties": {
+        "server": {
+          "type": "string",
+          "description": "Specify the registry server, if you're not using Docker Hub."
+        },
+        "username": {
+          "type": "string",
+          "description": "Registry username."
+        },
+        "password": {
+          "type": "array",
+          "description": "Registry password, can be a secret reference.",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "env": {
+      "type": "object",
+      "description": "Inject ENV variables into containers.",
+      "properties": {
+        "clear": {
+          "type": "object",
+          "description": "Clear environment variables.",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "secret": {
+          "type": "array",
+          "description": "Secret environment variables (from .kamal/secrets).",
+          "items": {
+            "type": "string"
+          }
+        },
+        "tags": {
+          "type": "object",
+          "description": "Tag-specific environment variables.",
+          "patternProperties": {
+            "^[a-z0-9_-]+$": {
+              "type": "object",
+              "properties": {
+                "clear": {
+                  "type": "object",
+                  "description": "Clear environment variables for the tag.",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                },
+                "secret": {
+                  "type": "array",
+                  "description": "Secret environment variables for the tag.",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "ssh": {
+      "type": "object",
+      "description": "SSH configuration.",
+      "properties": {
+        "user": {
+          "type": "string",
+          "description": "SSH username.",
+          "default": "root"
+        },
+        "port": {
+          "type": "string",
+          "description": "SSH port.",
+          "default": "22"
+        },
+        "proxy": {
+          "type": "string",
+          "description": "SSH proxy host."
+        },
+        "proxy_command": {
+          "type": "string",
+          "description": "Custom SSH proxy command."
+        },
+        "log_level": {
+          "type": "string",
+          "description": "SSH log level.",
+          "enum": [
+            "fatal",
+            "error",
+            "warn",
+            "info",
+            "debug"
+          ],
+          "default": "fatal"
+        },
+        "keys_only": {
+          "type": "boolean",
+          "description": "Use only private keys from keys and key_data parameters.",
+          "default": false
+        },
+        "keys": {
+          "type": "array",
+          "description": "File names of private keys to use for authentication.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "key_data": {
+          "type": "array",
+          "description": "Raw private keys in PEM format.",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "builder": {
+      "type": "object",
+      "description": "Configure builder setup.",
+      "properties": {
+        "secrets": {
+          "type": "array",
+          "description": "Secrets to pass to the builder.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "remote": {
+          "type": "string",
+          "description": "Remote builder host."
+        },
+        "arch": {
+          "type": "string",
+          "description": "Target architecture for the build."
+        }
+      }
+    },
+    "accessories": {
+      "type": "object",
+      "description": "Additional services to run in Docker.",
+      "patternProperties": {
+        "^[a-z0-9_-]+$": {
+          "type": "object",
+          "description": "Configuration for an accessory service.",
+          "properties": {
+            "image": {
+              "type": "string",
+              "description": "Docker image for the accessory."
+            },
+            "host": {
+              "type": "string",
+              "description": "Host to run the accessory on."
+            },
+            "port": {
+              "type": "string",
+              "description": "Port mapping for the accessory."
+            },
+            "cmd": {
+              "type": "string",
+              "description": "Custom command to run in the accessory container."
+            },
+            "directories": {
+              "type": "array",
+              "description": "Directories to mount into the accessory container.",
+              "items": {
+                "type": "string",
+                "description": "Directory mapping (local:remote)."
+              }
+            },
+            "env": {
+              "type": "object",
+              "description": "Environment variables for the accessory.",
+              "properties": {
+                "clear": {
+                  "type": "object",
+                  "description": "Clear environment variables.",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                },
+                "secret": {
+                  "type": "array",
+                  "description": "Secret environment variables.",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "required": [
+            "image",
+            "host"
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "service",
+    "image",
+    "servers",
+    "registry"
+  ]
+}
