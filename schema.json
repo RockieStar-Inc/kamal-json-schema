@@ -17,36 +17,49 @@
       "description": "Servers to deploy to, organized by roles.",
       "patternProperties": {
         "^[a-z0-9_-]+$": {
-          "type": "array",
-          "description": "List of servers for a specific role.",
-          "items": {
-            "oneOf": [
-              {
-                "type": "string",
-                "description": "Server hostname or IP address."
-              },
-              {
-                "type": "object",
-                "description": "Server with tags.",
-                "properties": {
-                  "host": {
+          "type": "object",
+          "description": "Configuration for a specific server role.",
+          "properties": {
+            "hosts": {
+              "type": "array",
+              "description": "List of servers for a specific role.",
+              "items": {
+                "oneOf": [
+                  {
                     "type": "string",
                     "description": "Server hostname or IP address."
                   },
-                  "tags": {
-                    "type": "array",
-                    "description": "List of tags for the server.",
-                    "items": {
-                      "type": "string"
-                    }
+                  {
+                    "type": "object",
+                    "description": "Server with tags.",
+                    "properties": {
+                      "host": {
+                        "type": "string",
+                        "description": "Server hostname or IP address."
+                      },
+                      "tags": {
+                        "type": "array",
+                        "description": "List of tags for the server.",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "required": [
+                      "host"
+                    ]
                   }
-                },
-                "required": [
-                  "host"
                 ]
               }
-            ]
-          }
+            },
+            "cmd": {
+              "type": "string",
+              "description": "Custom command to run for this role."
+            }
+          },
+          "required": [
+            "hosts"
+          ]
         }
       },
       "additionalProperties": false
@@ -172,7 +185,14 @@
           "type": "object",
           "description": "Clear environment variables.",
           "additionalProperties": {
-            "type": "string"
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              }
+            ]
           }
         },
         "secret": {
@@ -193,7 +213,14 @@
                   "type": "object",
                   "description": "Clear environment variables for the tag.",
                   "additionalProperties": {
-                    "type": "string"
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "integer"
+                      }
+                    ]
                   }
                 },
                 "secret": {
@@ -326,7 +353,14 @@
                   "type": "object",
                   "description": "Clear environment variables.",
                   "additionalProperties": {
-                    "type": "string"
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "integer"
+                      }
+                    ]
                   }
                 },
                 "secret": {
