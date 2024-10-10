@@ -359,6 +359,9 @@
                       },
                       {
                         "type": "integer"
+                      },
+                      {
+                        "type": "boolean"
                       }
                     ]
                   }
