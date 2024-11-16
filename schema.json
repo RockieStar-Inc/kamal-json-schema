@@ -170,14 +170,32 @@
         },
         "username": {
           "type": "string",
-          "description": "Registry username."
+          "description": "Registry username.",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
         },
         "password": {
-          "type": "array",
-          "description": "Registry password, can be a secret reference.",
-          "items": {
-            "type": "string"
-          }
+          "description": "Registry password.",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
         }
       }
     },
@@ -254,9 +272,9 @@
           "default": "root"
         },
         "port": {
-          "type": "string",
+          "type": "integer",
           "description": "SSH port.",
-          "default": "22"
+          "default": 22
         },
         "proxy": {
           "type": "string",
@@ -330,9 +348,24 @@
               "type": "string",
               "description": "Host to run the accessory on."
             },
+            "hosts": {
+              "type": "array",
+              "description": "List of hosts to run the accessory on.",
+              "items": {
+                "type": "string",
+                "description": "Individual host to run the accessory on."
+              }
+            },
             "port": {
-              "type": "string",
-              "description": "Port mapping for the accessory."
+              "description": "Port mapping for the accessory.",
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
             },
             "cmd": {
               "type": "string",
@@ -377,7 +410,11 @@
               }
             }
           },
-          "required": ["image", "host"]
+          "required": ["image"],
+          "anyOf": [
+            { "required": ["host"] },
+            { "required": ["hosts"] }
+          ]
         }
       },
       "additionalProperties": false
