@@ -170,14 +170,13 @@
         },
         "username": {
           "type": "string",
+          "description": "Registry username.",
           "oneOf": [
             {
-              "type": "string",
-              "description": "Registry username."
+              "type": "string"
             },
             {
               "type": "array",
-              "description": "Registry username.",
               "items": {
                 "type": "string"
               }
@@ -185,14 +184,13 @@
           ]
         },
         "password": {
+          "description": "Registry password.",
           "oneOf": [
             {
-              "type": "string",
-              "description": "Registry password."
+              "type": "string"
             },
             {
               "type": "array",
-              "description": "Registry password.",
               "items": {
                 "type": "string"
               }
@@ -359,14 +357,13 @@
               }
             },
             "port": {
+              "description": "Port mapping for the accessory.",
               "oneOf": [
                 {
-                  "type": "string",
-                  "description": "Port mapping for the accessory."
+                  "type": "string"
                 },
                 {
-                  "type": "integer",
-                  "description": "Port mapping for the accessory."
+                  "type": "integer"
                 }
               ]
             },
