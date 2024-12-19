@@ -169,7 +169,6 @@
           "description": "Specify the registry server, if you're not using Docker Hub."
         },
         "username": {
-          "type": "string",
           "description": "Registry username.",
           "oneOf": [
             {
