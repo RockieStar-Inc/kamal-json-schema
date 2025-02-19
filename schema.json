@@ -407,6 +407,38 @@
                   }
                 }
               }
+            },
+            "proxy": {
+              "type": "object",
+              "description": "Proxy settings for the accessory",
+              "properties": {
+                "host": {
+                    "type": "string",
+                    "description": "host for the accessory"
+                },
+                "ssl": {
+                  "type": "boolean",
+                  "description": "Enable SSL for the accessory"
+                },
+                "healthcheck": {
+                  "type": "object",
+                  "description": "Healthcheck configuration for the accessory.",
+                  "properties":{
+                    "interval": {
+                      "type": "integer",
+                      "description": "interval in seconds"
+                    },
+                    "timeout": {
+                      "type": "integer",
+                      "description": "timeout in seconds"
+                    },
+                    "path":{
+                      "type": "string",
+                      "description": "path for healthcheck"
+                    }
+                  }
+                }
+              }
             }
           },
           "required": ["image"],
