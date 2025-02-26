@@ -1,6 +1,6 @@
 # Kamal 2 Configuration: JSON Schema
 
-IDE hints for [Kamal](https://kamal-deploy.org) 2 configuration fileploy your applications instantly!
+This repository provides JSON Schema support for [Kamal](https://kamal-deploy.org) 2 configuration files. It enables IDEs to offer hints, validation, and autocompletion for Kamal configuration files, making it easier to deploy your applications instantly!
 
 
 ## How to use
