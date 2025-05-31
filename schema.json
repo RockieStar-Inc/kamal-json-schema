@@ -1,9 +1,17 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Kamal 2.0 Config",
-  "description": "Configuration schema for Kamal 2.0 deployment tool.",
+  "title": "Kamal 2.6 Config",
+  "description": "Configuration schema for Kamal 2.6 deployment tool.",
   "type": "object",
   "properties": {
+    "kamal_version": {
+      "type": "string",
+      "description": "Version of Kamal this configuration is for."
+    },
+    "minimum_version": {
+      "type": "string",
+      "description": "Minimum Kamal version required to use this configuration."
+    },
     "service": {
       "type": "string",
       "description": "Name of your application. Used to uniquely configure containers."
@@ -43,6 +51,10 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "primary": {
+                        "type": "boolean",
+                        "description": "Mark this server as primary in its role."
                       }
                     },
                     "required": ["host"]
@@ -53,6 +65,13 @@
             "cmd": {
               "type": "string",
               "description": "Custom command to run for this role."
+            },
+            "labels": {
+              "type": "object",
+              "description": "Labels to apply to the containers for this role.",
+              "additionalProperties": {
+                "type": "string"
+              }
             }
           },
           "required": ["hosts"]
@@ -70,23 +89,67 @@
           "type": "object",
           "description": "Configuration for kamal-proxy.",
           "properties": {
-            "ssl": {
+            "letsencrypt": {
               "type": "boolean",
               "description": "Enable automatic HTTPS via Let's Encrypt."
+            },
+            "letsencrypt_args": {
+              "type": "string",
+              "description": "Additional arguments for Let's Encrypt."
+            },
+            "force_ssl": {
+              "type": "boolean",
+              "description": "Force SSL by redirecting HTTP to HTTPS."
             },
             "host": {
               "type": "string",
               "description": "The host that will be used to serve the app."
             },
+            "port": {
+              "type": "integer",
+              "description": "The port the proxy will listen on.",
+              "default": 80
+            },
             "app_port": {
               "type": "integer",
               "description": "The port the application container is exposed on.",
-              "default": 80
+              "default": 3000
+            },
+            "reuse_port": {
+              "type": "boolean",
+              "description": "Enable SO_REUSEPORT on the proxy."
             },
             "response_timeout": {
               "type": "integer",
               "description": "How long to wait for requests to complete before timing out.",
               "default": 30
+            },
+            "basic_auth": {
+              "type": "object",
+              "description": "Basic authentication configuration.",
+              "properties": {
+                "username": {
+                  "type": "string",
+                  "description": "Username for basic authentication."
+                },
+                "password": {
+                  "type": "string",
+                  "description": "Password for basic authentication."
+                }
+              },
+              "required": ["username", "password"]
+            },
+            "healthcheck_path": {
+              "type": "string",
+              "description": "Path for healthcheck requests."
+            },
+            "custom_healthcheck_path": {
+              "type": "string",
+              "description": "Custom path for healthcheck requests."
+            },
+            "skip_exists_check": {
+              "type": "boolean",
+              "description": "Skip checking if the proxy container already exists."
             },
             "healthcheck": {
               "type": "object",
@@ -151,10 +214,6 @@
                   }
                 }
               }
-            },
-            "forward_headers": {
-              "type": "boolean",
-              "description": "Whether to forward X-Forwarded-For and X-Forwarded-Proto headers."
             }
           }
         }
@@ -259,6 +318,16 @@
           },
           "additionalProperties": false
         }
+      },
+      "additionalProperties": {
+        "type": "object",
+        "description": "Kubernetes specific environment variables.",
+        "properties": {
+          "secret_name": {
+            "type": "string",
+            "description": "Name of the Kubernetes secret to load."
+          }
+        }
       }
     },
     "ssh": {
@@ -307,6 +376,20 @@
           "items": {
             "type": "string"
           }
+        },
+        "sudo_password": {
+          "type": "string",
+          "description": "Password for sudo commands."
+        },
+        "permit_root_login": {
+          "type": "boolean",
+          "description": "Allow root login.",
+          "default": true
+        },
+        "forward_agent": {
+          "type": "boolean",
+          "description": "Enable SSH agent forwarding.",
+          "default": false
         }
       }
     },
@@ -314,6 +397,13 @@
       "type": "object",
       "description": "Configure builder setup.",
       "properties": {
+        "args": {
+          "type": "object",
+          "description": "Arguments to pass to the builder.",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
         "secrets": {
           "type": "array",
           "description": "Secrets to pass to the builder.",
@@ -328,6 +418,59 @@
         "arch": {
           "type": "string",
           "description": "Target architecture for the build."
+        },
+        "cache": {
+          "type": "object",
+          "description": "Cache configuration for the builder.",
+          "properties": {
+            "type": {
+              "type": "string",
+              "description": "Cache type (e.g., 'gha', 'registry')."
+            },
+            "options": {
+              "type": "object",
+              "description": "Cache options.",
+              "additionalProperties": true
+            }
+          }
+        },
+        "dockerfile": {
+          "type": "string",
+          "description": "Path to the Dockerfile.",
+          "default": "Dockerfile"
+        },
+        "hooks": {
+          "type": "object",
+          "description": "Hooks to run during the build process.",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "command": {
+                "type": "string",
+                "description": "Command to run for the hook."
+              },
+              "description": {
+                "type": "string",
+                "description": "Description of the hook."
+              }
+            },
+            "required": ["command"]
+          }
+        },
+        "multiarch": {
+          "type": "boolean",
+          "description": "Enable multi-arch builds.",
+          "default": true
+        },
+        "native": {
+          "type": "boolean",
+          "description": "Enable native builds.",
+          "default": false
+        },
+        "skip_push": {
+          "type": "boolean",
+          "description": "Skip pushing the image after building.",
+          "default": false
         }
       }
     },
@@ -365,6 +508,10 @@
                   "type": "integer"
                 }
               ]
+            },
+            "internal_port": {
+              "type": "integer",
+              "description": "Internal port the accessory container is listening on."
             },
             "cmd": {
               "type": "string",
@@ -408,6 +555,47 @@
                 }
               }
             },
+            "secrets": {
+              "type": "array",
+              "description": "Secrets to pass to the accessory container.",
+              "items": {
+                "type": "string"
+              }
+            },
+            "labels": {
+              "type": "object",
+              "description": "Labels to apply to the accessory container.",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "logging": {
+              "type": "object",
+              "description": "Logging configuration for the accessory.",
+              "properties": {
+                "driver": {
+                  "type": "string",
+                  "description": "Logging driver."
+                },
+                "options": {
+                  "type": "object",
+                  "description": "Logging driver options.",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "skip_push": {
+              "type": "boolean",
+              "description": "Skip pushing the accessory image.",
+              "default": false
+            },
+            "options": {
+              "type": "object",
+              "description": "Additional options for the accessory container.",
+              "additionalProperties": true
+            },
             "proxy": {
               "type": "object",
               "description": "Proxy settings for the accessory",
@@ -435,8 +623,54 @@
                     "path":{
                       "type": "string",
                       "description": "path for healthcheck"
+                    },
+                    "port": {
+                      "type": "integer",
+                      "description": "Port for healthcheck."
+                    },
+                    "cmd": {
+                      "type": "string",
+                      "description": "Command for healthcheck."
+                    },
+                    "log_lines": {
+                      "type": "integer",
+                      "description": "Number of log lines to check for health."
+                    },
+                    "max_attempts": {
+                      "type": "integer",
+                      "description": "Maximum attempts for healthcheck."
+                    },
+                    "fail_threshold": {
+                      "type": "integer",
+                      "description": "Failure threshold for healthcheck."
+                    },
+                    "success_threshold": {
+                      "type": "integer",
+                      "description": "Success threshold for healthcheck."
+                    },
+                    "period_seconds": {
+                      "type": "integer",
+                      "description": "Period in seconds for healthcheck."
                     }
                   }
+                }
+              }
+            },
+            "readiness_probe": {
+              "type": "object",
+              "description": "Readiness probe configuration for the accessory.",
+              "properties": {
+                "cmd": {
+                  "type": "string",
+                  "description": "Command for readiness probe."
+                },
+                "interval": {
+                  "type": "integer",
+                  "description": "Interval in seconds for readiness probe."
+                },
+                "timeout": {
+                  "type": "integer",
+                  "description": "Timeout in seconds for readiness probe."
                 }
               }
             }
@@ -449,6 +683,43 @@
         }
       },
       "additionalProperties": false
+    },
+    "hooks": {
+      "type": "object",
+      "description": "Hooks to run during deployment.",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "type": "string",
+            "description": "Command to run for the hook."
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the hook."
+          },
+          "roles": {
+            "type": "array",
+            "description": "Roles to run the hook on.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "hosts": {
+            "type": "array",
+            "description": "Hosts to run the hook on.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "run_once": {
+            "type": "boolean",
+            "description": "Run the hook only once per deployment.",
+            "default": false
+          }
+        },
+        "required": ["command"]
+      }
     }
   },
   "required": ["service", "image", "servers", "registry"]
